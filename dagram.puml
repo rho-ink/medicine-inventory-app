@@ -1,0 +1,230 @@
+@startuml
+set namespaceSeparator ::
+
+class "admin_app::controllers::auth_controller.dart::AuthController" {
+  -FirebaseAuth _auth
+  +dynamic signIn()
+  +Stream<User?> authStateChanges()
+  +void signOut()
+}
+
+"admin_app::controllers::auth_controller.dart::AuthController" o-- "firebase_auth::firebase_auth.dart::FirebaseAuth"
+
+class "admin_app::controllers::data_controller.dart::DataController" {
+  -DatabaseReference _gudangRef
+  -DatabaseReference _transaksiRef
+  +dynamic getGudangData()
+  +dynamic getTransaksiData()
+  +dynamic addGudang()
+  +dynamic addTransaksi()
+  +dynamic updateGudang()
+  +dynamic updateTransaksi()
+  +dynamic deleteGudang()
+  +dynamic deleteTransaksi()
+  +dynamic addTransaction()
+  +dynamic updateGudangStock()
+}
+
+"admin_app::controllers::data_controller.dart::DataController" o-- "firebase_database::firebase_database.dart::DatabaseReference"
+
+class "admin_app::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions web
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions ios
+  {static} +FirebaseOptions macos
+  {static} +FirebaseOptions windows
+  {static} +FirebaseOptions currentPlatform
+}
+
+"admin_app::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "admin_app::main.dart::MyApp" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "admin_app::main.dart::MyApp"
+
+class "admin_app::models::med_model.dart::Gudang" {
+  +String id
+  +String name
+  +String tipe
+  +int totalObat
+  +Map<String, ExpiryDetail> expiryDetails
+  +Map<String, dynamic> toJson()
+}
+
+class "admin_app::models::med_model.dart::ExpiryDetail" {
+  +String expiryDate
+  +int quantity
+  +String submissionDate
+  +Map<String, dynamic> toJson()
+}
+
+class "admin_app::models::trans_model.dart::Transaksi" {
+  +String id
+  +String date
+  +String gudangId
+  +String name
+  +String tipe
+  +int totalTrans
+  +Map<String, dynamic> toJson()
+}
+
+class "admin_app::views::components::auth_page.dart::AuthPage" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "admin_app::views::components::auth_page.dart::AuthPage"
+
+class "admin_app::views::components::my_button.dart::MyButton" {
+  +dynamic Function()? onTap
+  +Widget build()
+}
+
+"admin_app::views::components::my_button.dart::MyButton" o-- "null::dynamic Function()"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "admin_app::views::components::my_button.dart::MyButton"
+
+class "admin_app::views::components::my_textfield.dart::MyTextField" {
+  +TextEditingController controller
+  +String hintText
+  +bool obscureText
+  +Widget build()
+}
+
+"admin_app::views::components::my_textfield.dart::MyTextField" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "admin_app::views::components::my_textfield.dart::MyTextField"
+
+class "admin_app::views::components::pop_up.dart::PopupMenuExample" {
+  +State<PopupMenuExample> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::components::pop_up.dart::PopupMenuExample"
+
+class "admin_app::views::components::pop_up.dart::_PopupMenuExampleState" {
+  +SampleItem? selectedItem
+  +Widget build()
+}
+
+"admin_app::views::components::pop_up.dart::_PopupMenuExampleState" o-- "admin_app::views::components::pop_up.dart::SampleItem"
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::components::pop_up.dart::_PopupMenuExampleState"
+
+class "admin_app::views::components::pop_up.dart::SampleItem" {
+  +int index
+  {static} +List<SampleItem> values
+  {static} +SampleItem itemOne
+  {static} +SampleItem itemTwo
+  {static} +SampleItem itemThree
+}
+
+"admin_app::views::components::pop_up.dart::SampleItem" o-- "admin_app::views::components::pop_up.dart::SampleItem"
+"dart::core::Enum" <|-- "admin_app::views::components::pop_up.dart::SampleItem"
+
+class "admin_app::views::pages::edits::add_catat.dart::AddTransaksi" {
+  +State<AddTransaksi> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::pages::edits::add_catat.dart::AddTransaksi"
+
+class "admin_app::views::pages::edits::add_catat.dart::_AddTransaksiState" {
+  +TextEditingController totalController
+  +TextEditingController nameController
+  +TextEditingController submissionController
+  +DateTime selectDate
+  +Gudang? selectedGudang
+  -DataController _dataController
+  +void initState()
+  +Widget build()
+  -void _saveData()
+}
+
+"admin_app::views::pages::edits::add_catat.dart::_AddTransaksiState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"admin_app::views::pages::edits::add_catat.dart::_AddTransaksiState" o-- "admin_app::models::med_model.dart::Gudang"
+"admin_app::views::pages::edits::add_catat.dart::_AddTransaksiState" o-- "admin_app::controllers::data_controller.dart::DataController"
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::pages::edits::add_catat.dart::_AddTransaksiState"
+
+class "admin_app::views::pages::edits::add_gudang.dart::AddGudang" {
+  +State<AddGudang> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::pages::edits::add_gudang.dart::AddGudang"
+
+class "admin_app::views::pages::edits::add_gudang.dart::_AddGudangState" {
+  +TextEditingController totalController
+  +TextEditingController nameController
+  +TextEditingController submissionController
+  +TextEditingController expiryController
+  +DateTime selectDate
+  +Gudang? selectedGudang
+  -DataController _dataController
+  +void initState()
+  +Widget build()
+  -void _saveData()
+}
+
+"admin_app::views::pages::edits::add_gudang.dart::_AddGudangState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"admin_app::views::pages::edits::add_gudang.dart::_AddGudangState" o-- "admin_app::models::med_model.dart::Gudang"
+"admin_app::views::pages::edits::add_gudang.dart::_AddGudangState" o-- "admin_app::controllers::data_controller.dart::DataController"
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::pages::edits::add_gudang.dart::_AddGudangState"
+
+class "admin_app::views::pages::home_page.dart::HomePage" {
+  +State<HomePage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::pages::home_page.dart::HomePage"
+
+class "admin_app::views::pages::home_page.dart::_HomePageState" {
+  +List<Widget> widgetList
+  +int index
+  +dynamic signUserOut()
+  +Widget build()
+  -Widget _buildFAB()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::pages::home_page.dart::_HomePageState"
+
+class "admin_app::views::pages::login_page.dart::LoginPage" {
+  +State<LoginPage> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::pages::login_page.dart::LoginPage"
+
+class "admin_app::views::pages::login_page.dart::_LoginPageState" {
+  -AuthController _authController
+  +TextEditingController emailController
+  +TextEditingController passwordController
+  +bool isLoading
+  +void dispose()
+  +void signUserIn()
+  +Widget build()
+}
+
+"admin_app::views::pages::login_page.dart::_LoginPageState" o-- "admin_app::controllers::auth_controller.dart::AuthController"
+"admin_app::views::pages::login_page.dart::_LoginPageState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::pages::login_page.dart::_LoginPageState"
+
+class "admin_app::views::pages::screens::main_screen.dart::MainScreen" {
+  +Icon getIcon()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "admin_app::views::pages::screens::main_screen.dart::MainScreen"
+
+class "admin_app::views::pages::screens::second_screen.dart::SecondScreen" {
+  +_SecondScreenState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "admin_app::views::pages::screens::second_screen.dart::SecondScreen"
+
+class "admin_app::views::pages::screens::second_screen.dart::_SecondScreenState" {
+  -dynamic _futureGudangs
+  -DataController _dataController
+  +void initState()
+  +Widget build()
+  -void _navigateToEditGudang()
+}
+
+"admin_app::views::pages::screens::second_screen.dart::_SecondScreenState" o-- "admin_app::controllers::data_controller.dart::DataController"
+"flutter::src::widgets::framework.dart::State" <|-- "admin_app::views::pages::screens::second_screen.dart::_SecondScreenState"
+
+
+@enduml

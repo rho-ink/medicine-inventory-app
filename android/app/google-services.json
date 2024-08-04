@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1009662286391",
+    "firebase_url": "https://inv-puskesmas-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "inv-puskesmas",
+    "storage_bucket": "inv-puskesmas.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009662286391:android:5cdbb5104813175d6d3db2",
+        "android_client_info": {
+          "package_name": "com.example.admin_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmvCarJuQg9SMkM8qcSMd7wFrqMleaAik"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
