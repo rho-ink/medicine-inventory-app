@@ -65,12 +65,12 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.logout),
               onPressed: () => signUserOut(context),
             ),
-          // if (index == 1)
-          //   IconButton(
-          //     icon: Icon(Icons.search),
-          //     onPressed: () {
-          //     },
-          //   ),
+          if (index == 1)
+            IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+              },
+            ),
         ],
       ),
       //navbar
