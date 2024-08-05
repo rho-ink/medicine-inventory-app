@@ -4,6 +4,7 @@ import 'package:admin_app/views/pages/home_page.dart'; // Import your home page 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_app/controllers/auth_controller.dart';
+import 'package:admin_app/views/pages/screens/reset_password_page.dart'; // Import the reset password page here
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,7 +13,6 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final AuthController _authController = AuthController();
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Username or Password incorrect, or check internet connection.'),
+          content: Text('Username atau Password Salah, atau cek koneksi internet.'),
         ),
       );
     }
@@ -91,6 +91,17 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   MyButton(
                     onTap: signUserIn,
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResetPasswordPage(),
+                        ),
+                      );
+                    },
+                    child: const Text('Lupa Password?'),
                   ),
                 ],
               ),
