@@ -13,17 +13,23 @@ class SecondScreen extends StatefulWidget {
 class _SecondScreenState extends State<SecondScreen> {
   late Future<Map<String, Gudang>> _futureGudangs;
   final DataController _dataController = DataController();
-  final Map<String, TextEditingController> _quantityControllers = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _futureGudangs = _dataController.getGudangData(); // Fetch initial Gudang data
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
   }
 
   @override
   void dispose() {
-    _quantityControllers.values.forEach((controller) => controller.dispose());
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -36,50 +42,70 @@ class _SecondScreenState extends State<SecondScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        child: FutureBuilder<Map<String, Gudang>>(
-          future: _futureGudangs,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No data available'));
-            } else {
-              final gudangs = snapshot.data!.values.toList();
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Cari Obat dan BMHP',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _refreshData,
+              child: FutureBuilder<Map<String, Gudang>>(
+                future: _futureGudangs,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No data available'));
+                  } else {
+                    final gudangs = snapshot.data!.values.toList();
+                    final filteredGudangs = gudangs.where((gudang) {
+                      return gudang.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                    }).toList();
 
-              return ListView.builder(
-                itemCount: gudangs.length,
-                itemBuilder: (context, index) {
-                  var gudang = gudangs[index];
-                  return ListTile(
-                    title: Text(gudang.name),
-                    subtitle: Text('Total: ${gudang.totalObat}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, size: 16),
-                          onPressed: () {
-                            _navigateToEditGudang(context, gudang);
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.info_outline, size: 16),
-                          onPressed: () {
-                            _showExpiryInfoDialog(gudang);
-                          },
-                        ),
-                      ],
-                    ),
-                  );
+                    return ListView.builder(
+                      itemCount: filteredGudangs.length,
+                      itemBuilder: (context, index) {
+                        var gudang = filteredGudangs[index];
+                        return ListTile(
+                          title: Text(gudang.name),
+                          subtitle: Text('Total: ${gudang.totalObat}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, size: 16),
+                                onPressed: () {
+                                  _navigateToEditGudang(context, gudang);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.info_outline, size: 16),
+                                onPressed: () {
+                                  _showExpiryInfoDialog(gudang);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }
                 },
-              );
-            }
-          },
-        ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

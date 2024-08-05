@@ -4,7 +4,7 @@ import 'package:admin_app/views/pages/home_page.dart'; // Import your home page 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_app/controllers/auth_controller.dart';
-import 'package:admin_app/views/pages/screens/reset_password_page.dart'; // Import the reset password page here
+import 'package:admin_app/views/pages/reset_password_page.dart'; // Import the reset password page here
 
 class LoginPage extends StatefulWidget {
   @override
@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.purple[25],
         body: Stack(
           children: [
             SingleChildScrollView(
@@ -82,13 +82,13 @@ class _LoginPageState extends State<LoginPage> {
                     hintText: 'Email',
                     obscureText: false,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   MyTextField(
                     controller: passwordController,
                     hintText: 'Password',
                     obscureText: true,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   MyButton(
                     onTap: signUserIn,
                   ),
