@@ -6,6 +6,7 @@ import 'package:admin_app/views/pages/screens/second_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:admin_app/views/components/my_drawer.dart'; // Import the Drawer file
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -46,11 +47,11 @@ class _HomePageState extends State<HomePage> {
         );
       });
 
-      // return Scaffold(
-      //   body: Center(
-      //     child: LinearProgressIndicator(),
-      //   ),
-      // );
+      return Scaffold(
+        body: Center(
+          child: LinearProgressIndicator(),
+        ),
+      );
     }
 
     return Scaffold(
@@ -60,20 +61,19 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          if (index == 0)
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () => signUserOut(context),
-            ),
+          // if (index == 0)
+          //   IconButton(
+          //     icon: Icon(Icons.add),
+          //     onPressed: () {},
+          //   ),
           if (index == 1)
             IconButton(
               icon: Icon(Icons.add),
-              onPressed: () {
-              },
+              onPressed: () {},
             ),
         ],
       ),
-      //navbar
+      drawer: AppDrawer(onLogout: () => signUserOut(context)), // Use the Drawer
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         onTap: (value) {
@@ -93,7 +93,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: _buildFAB(),
-      // Switch layar
       body: widgetList[index],
     );
   }
