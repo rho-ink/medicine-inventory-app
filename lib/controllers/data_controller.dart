@@ -281,132 +281,142 @@ class DataController {
     }
   }
 
-Future<int> getMonthlyAddedGudang(String month) async {
-  try {
-    final snapshot = await _logRef.get(); // Ensure _logRef points to gudangLog
-    if (snapshot.exists) {
-      final Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
-      if (data != null) {
-        int total = 0;
-        final DateFormat inputDateFormat = DateFormat('dd/MM/yyyy'); // Define the date format
+  Future<int> getMonthlyAddedGudang(String month) async {
+    try {
+      final snapshot =
+          await _logRef.get(); // Ensure _logRef points to gudangLog
+      if (snapshot.exists) {
+        final Map<dynamic, dynamic>? data =
+            snapshot.value as Map<dynamic, dynamic>?;
+        if (data != null) {
+          int total = 0;
+          final DateFormat inputDateFormat =
+              DateFormat('dd/MM/yyyy'); // Define the date format
 
-        // Map to store the latest quantity for each expiry detail
-        Map<String, int> latestQuantities = {};
+          // Map to store the latest quantity for each expiry detail
+          Map<String, int> latestQuantities = {};
 
-        data.forEach((key, value) {
-          if (value is Map<dynamic, dynamic>) {
-            final action = value['action'] as String?;
-            if (action == 'update' || action == 'add_expiry_detail') {
-              final after = value['after'] as Map<dynamic, dynamic>?;
-              final expiryDetails = after?['expiryDetails'] as Map<dynamic, dynamic>?;
+          data.forEach((key, value) {
+            if (value is Map<dynamic, dynamic>) {
+              final action = value['action'] as String?;
+              if (action == 'update' || action == 'add_expiry_detail') {
+                final after = value['after'] as Map<dynamic, dynamic>?;
+                final expiryDetails =
+                    after?['expiryDetails'] as Map<dynamic, dynamic>?;
 
-              if (expiryDetails != null) {
-                expiryDetails.forEach((expiryKey, expiryValue) {
-                  if (expiryValue is Map<dynamic, dynamic>) {
-                    final expiryDetail = Map<String, dynamic>.from(expiryValue);
+                if (expiryDetails != null) {
+                  expiryDetails.forEach((expiryKey, expiryValue) {
+                    if (expiryValue is Map<dynamic, dynamic>) {
+                      final expiryDetail =
+                          Map<String, dynamic>.from(expiryValue);
 
-                    final submissionDateStr = expiryDetail['submissionDate'] as String?;
-                    final quantity = expiryDetail['quantity'] as num?;
+                      final submissionDateStr =
+                          expiryDetail['submissionDate'] as String?;
+                      final quantity = expiryDetail['quantity'] as num?;
 
-                    if (submissionDateStr != null && quantity != null) {
-                      try {
-                        final DateTime submissionDate = inputDateFormat.parse(submissionDateStr);
-                        final String submissionMonth = '${submissionDate.year}-${submissionDate.month.toString().padLeft(2, '0')}';
+                      if (submissionDateStr != null && quantity != null) {
+                        try {
+                          final DateTime submissionDate =
+                              inputDateFormat.parse(submissionDateStr);
+                          final String submissionMonth =
+                              '${submissionDate.year}-${submissionDate.month.toString().padLeft(2, '0')}';
 
-                        // Compare submissionMonth with the input month
-                        if (submissionMonth == month) {
-                          // Update latest quantity for the same expiryDetail id
-                          latestQuantities[expiryKey] = quantity.toInt();
+                          // Compare submissionMonth with the input month
+                          if (submissionMonth == month) {
+                            // Update latest quantity for the same expiryDetail id
+                            latestQuantities[expiryKey] = quantity.toInt();
+                          }
+                        } catch (e) {
+                          print(
+                              'Error parsing submission date: $submissionDateStr');
                         }
-                      } catch (e) {
-                        print('Error parsing submission date: $submissionDateStr');
                       }
                     }
-                  }
-                });
+                  });
+                }
               }
             }
-          }
-        });
+          });
 
-        // Sum up the latest quantities
-        total = latestQuantities.values.fold(0, (sum, qty) => sum + qty);
+          // Sum up the latest quantities
+          total = latestQuantities.values.fold(0, (sum, qty) => sum + qty);
 
-        // Include transaction adjustments as positive values
-        final transactionsTotal = await getMonthlyTotalTransactions(month);
-        total += transactionsTotal; // Transactions should be added as positive
+          // Include transaction adjustments as positive values
+          final transactionsTotal = await getMonthlyTotalTransactions(month);
+          total +=
+              transactionsTotal; // Transactions should be added as positive
 
-        return total;
+          return total;
+        }
       }
-    }
-    return 0;
-  } catch (e) {
-    print('Error fetching monthly added Gudang total: $e');
-    return 0;
-  }
-}
-
-
-
-Future<int> getMonthlyAddedGudangForMedicine(String medicineName) async {
-  try {
-    final snapshot = await _logRef.get(); // Ensure _logRef points to gudangLog
-    final data = snapshot.value as Map<dynamic, dynamic>?;
-
-    if (data == null) {
-      print('No data found in gudangLog.');
+      return 0;
+    } catch (e) {
+      print('Error fetching monthly added Gudang total: $e');
       return 0;
     }
+  }
 
-    int totalAddedGudang = 0;
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(now.year, now.month, 1);
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0); // Last day of the current month
+  Future<int> getMonthlyAddedGudangForMedicine(String medicineName) async {
+    try {
+      final snapshot =
+          await _logRef.get(); // Ensure _logRef points to gudangLog
+      final data = snapshot.value as Map<dynamic, dynamic>?;
 
-    for (var entry in data.entries) {
-      final action = entry.value['action'] as String?;
-      final timestampStr = entry.value['timestamp'] as String?;
-      final timestamp = DateTime.tryParse(timestampStr ?? '');
+      if (data == null) {
+        print('No data found in gudangLog.');
+        return 0;
+      }
 
-      if (action == 'update') {
-        final gudangId = entry.value['gudangId'] as String?;
-        final beforeData = entry.value['before'] as Map<dynamic, dynamic>?;
-        final afterData = entry.value['after'] as Map<dynamic, dynamic>?;
+      int totalAddedGudang = 0;
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth =
+          DateTime(now.year, now.month + 1, 0); // Last day of the current month
 
-        if (beforeData != null && afterData != null && gudangId != null) {
-          final beforeTotal = beforeData['totalObat'] as num?;
-          final afterTotal = afterData['totalObat'] as num?;
-          final gudangName = afterData['name'] as String?;
+      for (var entry in data.entries) {
+        final action = entry.value['action'] as String?;
+        final timestampStr = entry.value['timestamp'] as String?;
+        final timestamp = DateTime.tryParse(timestampStr ?? '');
 
-          if (beforeTotal != null && afterTotal != null && gudangName == medicineName) {
-            final quantityAdded = (afterTotal - beforeTotal).toInt();
+        if (action == 'update') {
+          final gudangId = entry.value['gudangId'] as String?;
+          final beforeData = entry.value['before'] as Map<dynamic, dynamic>?;
+          final afterData = entry.value['after'] as Map<dynamic, dynamic>?;
 
-            if (timestamp != null &&
-                timestamp.isAfter(firstDayOfMonth.subtract(Duration(days: 1))) &&
-                timestamp.isBefore(lastDayOfMonth.add(Duration(days: 1)))) {
-              if (quantityAdded > 0) {
-                totalAddedGudang += quantityAdded;
+          if (beforeData != null && afterData != null && gudangId != null) {
+            final beforeTotal = beforeData['totalObat'] as num?;
+            final afterTotal = afterData['totalObat'] as num?;
+            final gudangName = afterData['name'] as String?;
+
+            if (beforeTotal != null &&
+                afterTotal != null &&
+                gudangName == medicineName) {
+              final quantityAdded = (afterTotal - beforeTotal).toInt();
+
+              if (timestamp != null &&
+                  timestamp
+                      .isAfter(firstDayOfMonth.subtract(Duration(days: 1))) &&
+                  timestamp.isBefore(lastDayOfMonth.add(Duration(days: 1)))) {
+                if (quantityAdded > 0) {
+                  totalAddedGudang += quantityAdded;
+                }
               }
             }
           }
         }
       }
+
+      return totalAddedGudang;
+    } catch (e) {
+      print("Error fetching monthly added Gudang: $e");
+      return 0;
     }
-
-    return totalAddedGudang;
-  } catch (e) {
-    print("Error fetching monthly added Gudang: $e");
-    return 0;
   }
-}
-
-
-
-
 
   Future<int> getMonthlyTransactionForMedicine(String medicineName) async {
     try {
-      final snapshot = await _transaksiRef.get(); // Ensure _transRef points to transaksiData
+      final snapshot =
+          await _transaksiRef.get(); // Ensure _transRef points to transaksiData
       final data = snapshot.value as Map<dynamic, dynamic>?;
 
       if (data == null) {
@@ -417,7 +427,8 @@ Future<int> getMonthlyAddedGudangForMedicine(String medicineName) async {
       int totalTransaction = 0;
       final now = DateTime.now();
       final firstDayOfMonth = DateTime(now.year, now.month, 1);
-      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0); // Last day of the current month
+      final lastDayOfMonth =
+          DateTime(now.year, now.month + 1, 0); // Last day of the current month
 
       data.forEach((key, value) {
         if (value is Map<dynamic, dynamic>) {
@@ -442,78 +453,100 @@ Future<int> getMonthlyAddedGudangForMedicine(String medicineName) async {
     }
   }
 
- Future<int> getMonthlyDeletedGudangForMedicine(String medicineName) async {
-  try {
-    final snapshot = await _logRef.get(); // Ensure _logRef points to gudangLog
-    final data = snapshot.value as Map<dynamic, dynamic>?;
+  Future<int> getMonthlyDeletedGudangForMedicine(String medicineName) async {
+    try {
+      final snapshot =
+          await _logRef.get(); // Ensure _logRef points to gudangLog
+      final data = snapshot.value as Map<dynamic, dynamic>?;
 
-    if (data == null) {
-      print('No data found in gudangLog.');
-      return 0;
-    }
+      if (data == null) {
+        print('No data found in gudangLog.');
+        return 0;
+      }
 
-    int totalDeletedGudang = 0;
-    final now = DateTime.now();
-    final firstDayOfMonth = DateTime(now.year, now.month, 1);
-    final lastDayOfMonth = DateTime(now.year, now.month + 1, 0); // Last day of the current month
+      int totalDeletedGudang = 0;
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth =
+          DateTime(now.year, now.month + 1, 0); // Last day of the current month
 
-    print('Processing log entries...');
+      print('Processing log entries...');
 
-    for (var entry in data.entries) {
-      final action = entry.value['action'] as String?;
-      final timestampStr = entry.value['timestamp'] as String?;
-      final timestamp = DateTime.tryParse(timestampStr ?? '');
+      for (var entry in data.entries) {
+        final action = entry.value['action'] as String?;
+        final timestampStr = entry.value['timestamp'] as String?;
+        final timestamp = DateTime.tryParse(timestampStr ?? '');
 
-      print('Processing entry: action=$action, timestamp=$timestampStr');
+        print('Processing entry: action=$action, timestamp=$timestampStr');
 
-      if (action == 'delete_expiry_detail' && timestamp != null) {
-        if (timestamp.isAfter(firstDayOfMonth.subtract(Duration(days: 1))) &&
-            timestamp.isBefore(lastDayOfMonth.add(Duration(days: 1)))) {
-          final gudangId = entry.value['gudangId'] as String?;
-          final deletedDetail = entry.value['deletedDetail'] as Map<dynamic, dynamic>?;
+        if (action == 'delete_expiry_detail' && timestamp != null) {
+          if (timestamp.isAfter(firstDayOfMonth.subtract(Duration(days: 1))) &&
+              timestamp.isBefore(lastDayOfMonth.add(Duration(days: 1)))) {
+            final gudangId = entry.value['gudangId'] as String?;
+            final deletedDetail =
+                entry.value['deletedDetail'] as Map<dynamic, dynamic>?;
 
-          if (deletedDetail != null && gudangId != null) {
-            final quantity = deletedDetail['quantity'] as num?;
-            final quantityToAdd = quantity?.toInt() ?? 0;
+            if (deletedDetail != null && gudangId != null) {
+              final quantity = deletedDetail['quantity'] as num?;
+              final quantityToAdd = quantity?.toInt() ?? 0;
 
-            // Debugging output
-            print('Found deleted detail with quantity: $quantityToAdd');
+              // Debugging output
+              print('Found deleted detail with quantity: $quantityToAdd');
 
-            // Fetch Gudang details by gudangId
-            final gudangSnapshot = await _gudangRef.child(gudangId).get();
-            final gudangData = gudangSnapshot.value as Map<dynamic, dynamic>?;
+              // Fetch Gudang details by gudangId
+              final gudangSnapshot = await _gudangRef.child(gudangId).get();
+              final gudangData = gudangSnapshot.value as Map<dynamic, dynamic>?;
 
-            if (gudangData != null) {
-              final gudangName = gudangData['name'] as String?;
+              if (gudangData != null) {
+                final gudangName = gudangData['name'] as String?;
 
-              if (gudangName == medicineName) {
-                totalDeletedGudang += quantityToAdd;
-                print('Added $quantityToAdd to totalDeletedGudang for $medicineName.');
+                if (gudangName == medicineName) {
+                  totalDeletedGudang += quantityToAdd;
+                  print(
+                      'Added $quantityToAdd to totalDeletedGudang for $medicineName.');
+                } else {
+                  print(
+                      'Gudang name $gudangName does not match $medicineName.');
+                }
               } else {
-                print('Gudang name $gudangName does not match $medicineName.');
+                print('Gudang data for ID $gudangId not found.');
               }
             } else {
-              print('Gudang data for ID $gudangId not found.');
+              print('Deleted detail or Gudang ID missing.');
             }
           } else {
-            print('Deleted detail or Gudang ID missing.');
+            print('Skipping entry with timestamp outside of this month.');
           }
         } else {
-          print('Skipping entry with timestamp outside of this month.');
+          print('Skipping entry with non-delete action or invalid timestamp.');
         }
-      } else {
-        print('Skipping entry with non-delete action or invalid timestamp.');
       }
-    }
 
-    print('Final totalDeletedGudang for $medicineName: $totalDeletedGudang');
-    return totalDeletedGudang;
-  } catch (e) {
-    print("Error fetching monthly deleted Gudang: $e");
-    return 0;
+      print('Final totalDeletedGudang for $medicineName: $totalDeletedGudang');
+      return totalDeletedGudang;
+    } catch (e) {
+      print("Error fetching monthly deleted Gudang: $e");
+      return 0;
+    }
+  }
+
+  Future<List<String>> getObatNames() async {
+    try {
+      final snapshot = await FirebaseDatabase.instance.ref('obatData').get();
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<dynamic, dynamic>?;
+        if (data != null) {
+          return data.values
+              .map(
+                  (value) => (value as Map<dynamic, dynamic>)['name'] as String)
+              .toSet() // Remove duplicates
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching Obat names: $e');
+      return [];
+    }
   }
 }
-
-
-}
-

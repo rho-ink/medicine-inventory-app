@@ -79,7 +79,7 @@ class _SecondScreenState extends State<SecondScreen> {
                         var gudang = filteredGudangs[index];
                         return ListTile(
                           title: Text(gudang.name),
-                          subtitle: Text('Total: ${gudang.totalObat}'),
+                          subtitle: Text('Persediaan: ${gudang.totalObat}'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

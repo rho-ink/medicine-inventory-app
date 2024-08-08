@@ -3,6 +3,7 @@ import 'package:admin_app/views/pages/edits/add_gudang.dart';
 import 'package:admin_app/views/pages/screens/main_screen.dart';
 import 'package:admin_app/views/pages/login_page.dart';
 import 'package:admin_app/views/pages/screens/second_screen.dart';
+import 'package:admin_app/views/pages/screens/dashboard_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   var widgetList = [
+    DashboardPage(),
     MainScreen(),
     SecondScreen(),
   ];
@@ -57,18 +59,18 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          index == 0 ? 'Daftar Keluaran Obat' : 'Daftar Obat dan BMHP',
+          _getAppBarTitle(index),
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-          // if (index == 0)
-          //   IconButton(
-          //     icon: Icon(Icons.add),
-          //     onPressed: () {},
-          //   ),
-          if (index == 1)
+          if (index == 0)
             IconButton(
-              icon: Icon(Icons.add),
+              icon: Icon(Icons.notifications_rounded),
+              onPressed: () {},
+            ),
+          if (index == 2)
+            IconButton(
+              icon: Icon(Icons.print_rounded),
               onPressed: () {},
             ),
         ],
@@ -83,11 +85,15 @@ class _HomePageState extends State<HomePage> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.pencil_circle),
-            label: 'Catat',
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.graph_square),
+            icon: Icon(CupertinoIcons.pencil_ellipsis_rectangle),
+            label: 'Data Distribusi',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.warehouse_outlined),
             label: 'Data Gudang',
           ),
         ],
@@ -98,7 +104,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFAB() {
-    if (index == 0) {
+    if (index == 1) {
       // FAB MainScreen
       return FloatingActionButton(
         onPressed: () {
@@ -112,7 +118,7 @@ class _HomePageState extends State<HomePage> {
         child: Icon(CupertinoIcons.add),
         backgroundColor: Colors.white,
       );
-    } else if (index == 1) {
+    } else if (index == 2) {
       // FAB SecondScreen
       return FloatingActionButton(
         onPressed: () {
@@ -128,5 +134,17 @@ class _HomePageState extends State<HomePage> {
       );
     }
     return Container(); // Return an empty container if no FAB is needed
+  }
+  String _getAppBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Dashboard Gudang';
+      case 1:
+        return 'Daftar Keluaran Obat';
+      case 2:
+        return 'Daftar Obat dan BMHP'; // Title for the new screen
+      default:
+        return 'Default Title';
+    }
   }
 }
