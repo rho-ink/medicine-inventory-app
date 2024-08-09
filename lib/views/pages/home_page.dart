@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_app/views/components/my_drawer.dart'; // Import the Drawer file
+import 'package:admin_app/views/components/my_excel.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({super.key});
@@ -71,7 +72,10 @@ class _HomePageState extends State<HomePage> {
           if (index == 2)
             IconButton(
               icon: Icon(Icons.print_rounded),
-              onPressed: () {},
+              onPressed: () async {await exportToExcel(); // Call your export function here
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Exported to Excel!')),
+              );},
             ),
         ],
       ),

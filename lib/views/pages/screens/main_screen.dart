@@ -36,41 +36,6 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  Future<void> _showDialog() async {
-    final currentMonth = DateTime.now().toString().substring(0, 7); // "YYYY-MM"
-
-    // Fetch monthly transaction data
-    final monthlyTransactions =
-        await _dataController.getMonthlyTotalTransactions(currentMonth);
-    // Fetch monthly added Gudang data
-    final monthlyAddedGudang =
-        await _dataController.getMonthlyAddedGudang(currentMonth);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Monthly Data'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Pengeluaran Bulan Ini: $monthlyTransactions'),
-                Text('Penerimaan Bulan Ini: $monthlyAddedGudang'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,19 +69,7 @@ class _MainScreenState extends State<MainScreen> {
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            _showDialog(); // Show the dialog with monthly transaction data
-                          },
-                          child: Text(
-                            'Total',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
+                        
                       ],
                     ),
                     SizedBox(height: 20),

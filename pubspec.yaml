@@ -44,6 +44,8 @@ dependencies:
   dropdown_search: ^5.0.6
   firebase_database: ^11.0.3
   firebase_messaging: ^15.0.4
+  path_provider: ^2.1.4
+  excel: ^4.0.2
 
 dev_dependencies:
   flutter_test:

@@ -248,113 +248,113 @@ class DataController {
     }
   }
 
-//////////////
-  Future<int> getMonthlyTotalTransactions(String month) async {
-    try {
-      final snapshot = await _transaksiRef.get();
-      if (snapshot.exists) {
-        final Map<dynamic, dynamic>? data =
-            snapshot.value as Map<dynamic, dynamic>?;
-        if (data != null) {
-          int total = 0;
-          data.forEach((key, value) {
-            if (value is Map<dynamic, dynamic>) {
-              final transaction =
-                  Transaksi.fromJson(Map<String, dynamic>.from(value));
-              final dateParts = transaction.date.split('/');
-              if (dateParts.length == 3) {
-                final transactionMonth =
-                    '${dateParts[2]}-${dateParts[1]}'; // "YYYY-MM"
-                if (transactionMonth == month) {
-                  total += transaction.totalTrans.toInt();
-                }
-              }
-            }
-          });
-          return total;
-        }
-      }
-      return 0;
-    } catch (e) {
-      print('Error fetching monthly total transactions: $e');
-      return 0;
-    }
-  }
+// //////////////
+//   Future<int> getMonthlyTotalTransactions(String month) async {
+//     try {
+//       final snapshot = await _transaksiRef.get();
+//       if (snapshot.exists) {
+//         final Map<dynamic, dynamic>? data =
+//             snapshot.value as Map<dynamic, dynamic>?;
+//         if (data != null) {
+//           int total = 0;
+//           data.forEach((key, value) {
+//             if (value is Map<dynamic, dynamic>) {
+//               final transaction =
+//                   Transaksi.fromJson(Map<String, dynamic>.from(value));
+//               final dateParts = transaction.date.split('/');
+//               if (dateParts.length == 3) {
+//                 final transactionMonth =
+//                     '${dateParts[2]}-${dateParts[1]}'; // "YYYY-MM"
+//                 if (transactionMonth == month) {
+//                   total += transaction.totalTrans.toInt();
+//                 }
+//               }
+//             }
+//           });
+//           return total;
+//         }
+//       }
+//       return 0;
+//     } catch (e) {
+//       print('Error fetching monthly total transactions: $e');
+//       return 0;
+//     }
+//   }
 
-  Future<int> getMonthlyAddedGudang(String month) async {
-    try {
-      final snapshot =
-          await _logRef.get(); // Ensure _logRef points to gudangLog
-      if (snapshot.exists) {
-        final Map<dynamic, dynamic>? data =
-            snapshot.value as Map<dynamic, dynamic>?;
-        if (data != null) {
-          int total = 0;
-          final DateFormat inputDateFormat =
-              DateFormat('dd/MM/yyyy'); // Define the date format
+  // Future<int> getMonthlyAddedGudang(String month) async {
+  //   try {
+  //     final snapshot =
+  //         await _logRef.get(); // Ensure _logRef points to gudangLog
+  //     if (snapshot.exists) {
+  //       final Map<dynamic, dynamic>? data =
+  //           snapshot.value as Map<dynamic, dynamic>?;
+  //       if (data != null) {
+  //         int total = 0;
+  //         final DateFormat inputDateFormat =
+  //             DateFormat('dd/MM/yyyy'); // Define the date format
 
-          // Map to store the latest quantity for each expiry detail
-          Map<String, int> latestQuantities = {};
+  //         // Map to store the latest quantity for each expiry detail
+  //         Map<String, int> latestQuantities = {};
 
-          data.forEach((key, value) {
-            if (value is Map<dynamic, dynamic>) {
-              final action = value['action'] as String?;
-              if (action == 'update' || action == 'add_expiry_detail') {
-                final after = value['after'] as Map<dynamic, dynamic>?;
-                final expiryDetails =
-                    after?['expiryDetails'] as Map<dynamic, dynamic>?;
+  //         data.forEach((key, value) {
+  //           if (value is Map<dynamic, dynamic>) {
+  //             final action = value['action'] as String?;
+  //             if (action == 'update' || action == 'add_expiry_detail') {
+  //               final after = value['after'] as Map<dynamic, dynamic>?;
+  //               final expiryDetails =
+  //                   after?['expiryDetails'] as Map<dynamic, dynamic>?;
 
-                if (expiryDetails != null) {
-                  expiryDetails.forEach((expiryKey, expiryValue) {
-                    if (expiryValue is Map<dynamic, dynamic>) {
-                      final expiryDetail =
-                          Map<String, dynamic>.from(expiryValue);
+  //               if (expiryDetails != null) {
+  //                 expiryDetails.forEach((expiryKey, expiryValue) {
+  //                   if (expiryValue is Map<dynamic, dynamic>) {
+  //                     final expiryDetail =
+  //                         Map<String, dynamic>.from(expiryValue);
 
-                      final submissionDateStr =
-                          expiryDetail['submissionDate'] as String?;
-                      final quantity = expiryDetail['quantity'] as num?;
+  //                     final submissionDateStr =
+  //                         expiryDetail['submissionDate'] as String?;
+  //                     final quantity = expiryDetail['quantity'] as num?;
 
-                      if (submissionDateStr != null && quantity != null) {
-                        try {
-                          final DateTime submissionDate =
-                              inputDateFormat.parse(submissionDateStr);
-                          final String submissionMonth =
-                              '${submissionDate.year}-${submissionDate.month.toString().padLeft(2, '0')}';
+  //                     if (submissionDateStr != null && quantity != null) {
+  //                       try {
+  //                         final DateTime submissionDate =
+  //                             inputDateFormat.parse(submissionDateStr);
+  //                         final String submissionMonth =
+  //                             '${submissionDate.year}-${submissionDate.month.toString().padLeft(2, '0')}';
 
-                          // Compare submissionMonth with the input month
-                          if (submissionMonth == month) {
-                            // Update latest quantity for the same expiryDetail id
-                            latestQuantities[expiryKey] = quantity.toInt();
-                          }
-                        } catch (e) {
-                          print(
-                              'Error parsing submission date: $submissionDateStr');
-                        }
-                      }
-                    }
-                  });
-                }
-              }
-            }
-          });
+  //                         // Compare submissionMonth with the input month
+  //                         if (submissionMonth == month) {
+  //                           // Update latest quantity for the same expiryDetail id
+  //                           latestQuantities[expiryKey] = quantity.toInt();
+  //                         }
+  //                       } catch (e) {
+  //                         print(
+  //                             'Error parsing submission date: $submissionDateStr');
+  //                       }
+  //                     }
+  //                   }
+  //                 });
+  //               }
+  //             }
+  //           }
+  //         });
 
-          // Sum up the latest quantities
-          total = latestQuantities.values.fold(0, (sum, qty) => sum + qty);
+  //         // Sum up the latest quantities
+  //         total = latestQuantities.values.fold(0, (sum, qty) => sum + qty);
 
-          // Include transaction adjustments as positive values
-          final transactionsTotal = await getMonthlyTotalTransactions(month);
-          total +=
-              transactionsTotal; // Transactions should be added as positive
+  //         // Include transaction adjustments as positive values
+  //         final transactionsTotal = await getMonthlyTotalTransactions(month);
+  //         total +=
+  //             transactionsTotal; // Transactions should be added as positive
 
-          return total;
-        }
-      }
-      return 0;
-    } catch (e) {
-      print('Error fetching monthly added Gudang total: $e');
-      return 0;
-    }
-  }
+  //         return total;
+  //       }
+  //     }
+  //     return 0;
+  //   } catch (e) {
+  //     print('Error fetching monthly added Gudang total: $e');
+  //     return 0;
+  //   }
+  // }
 
   Future<int> getMonthlyAddedGudangForMedicine(String medicineName) async {
     try {
@@ -530,6 +530,7 @@ class DataController {
     }
   }
 
+  ///ambil obat
   Future<List<String>> getObatNames() async {
     try {
       final snapshot = await FirebaseDatabase.instance.ref('obatData').get();
@@ -549,4 +550,5 @@ class DataController {
       return [];
     }
   }
+  /////
 }

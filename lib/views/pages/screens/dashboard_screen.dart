@@ -17,7 +17,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<Map<String, int>> _fetchDashboardData() async {
     // Fetch data based on _selectedMonth and _selectedObatName
-    int added = await _dataController.getMonthlyAddedGudang(_selectedMonth);
+    int added = await _dataController.getMonthlyAddedGudangForMedicine(_selectedMonth);
     int reduced = await _dataController
         .getMonthlyTransactionForMedicine(_selectedObatName);
     int deleted = await _dataController
