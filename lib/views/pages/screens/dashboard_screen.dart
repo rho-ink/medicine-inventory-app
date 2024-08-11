@@ -73,10 +73,21 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Dashboard')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Informasi Data Gudang',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          
+                        ],),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: DropdownSearch<String>(
@@ -101,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: Colors.grey,
                   ),
                   filled: true,
-                  hintText: 'Select Obat',
+                  hintText: 'Pilih Obat dan BMHP',
                   hintStyle: const TextStyle(color: Colors.grey),
                 ),
               ),
@@ -110,7 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 searchFieldProps: TextFieldProps(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    hintText: 'Search Obat',
+                    hintText: 'Cari Obat dan BMHP',
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                 ),
@@ -137,12 +148,12 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Row(
                     children: [
                       DashboardCard(
-                          title: 'Added Items', quantity: data?['added'] ?? 0),
+                          title: 'Penerimaan', quantity: data?['added'] ?? 0),
                       DashboardCard(
-                          title: 'Reduced Items',
+                          title: 'Distribusi',
                           quantity: data?['reduced'] ?? 0),
                       DashboardCard(
-                          title: 'Deleted Items',
+                          title: 'Kadaluarsa',
                           quantity: data?['deleted'] ?? 0),
                     ],
                   ),
@@ -169,7 +180,7 @@ class DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 150,
+      width: 200,
       padding: const EdgeInsets.all(4.0),
       child: Card(
         child: Padding(

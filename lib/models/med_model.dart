@@ -47,12 +47,14 @@ class ExpiryDetail {
   String expiryDate;
   int quantity;
    String submissionDate;
+   String batchId;
 
   ExpiryDetail({
     required this.id,
     required this.expiryDate,
     required this.quantity,
     required this.submissionDate,
+    required this.batchId,
   });
 
   factory ExpiryDetail.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,7 @@ class ExpiryDetail {
       expiryDate: json['expiryDate'] ?? '',
       quantity: json['quantity'] ?? 0,
       submissionDate: json['submissionDate'] ?? '',
+      batchId:  json['batchId'] ?? '',
     );
   }
 
@@ -70,6 +73,7 @@ class ExpiryDetail {
       'expiryDate': expiryDate,
       'quantity': quantity,
       'submissionDate': submissionDate,
+      'batchId' : batchId,
     };
   }
 }

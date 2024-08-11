@@ -270,7 +270,7 @@ Future<void> _showExpiryInfoDialog(Gudang gudang) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(
-        'Tanggal Kadaluwarsa: ${detail.expiryDate} - Status: $status',
+        'Nomor Batch: ${detail.batchId}\nTanggal Kadaluwarsa: ${detail.expiryDate} - Status: $status',
         style: TextStyle(
           color: difference.inDays > 180 ? Colors.green : Colors.red,
         ),

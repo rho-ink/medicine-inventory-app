@@ -357,6 +357,7 @@ class _AddTransaksiState extends State<AddTransaksi> {
         expiryDate: detail.expiryDate,
         quantity: detail.quantity - remainingQuantity,
         submissionDate: detail.submissionDate,
+        batchId: detail.batchId,
       );
       remainingQuantity = 0;
     } else {

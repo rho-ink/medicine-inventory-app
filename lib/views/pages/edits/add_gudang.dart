@@ -18,6 +18,7 @@ class _AddGudangState extends State<AddGudang> {
   TextEditingController nameController = TextEditingController();
   TextEditingController submissionController = TextEditingController();
   TextEditingController expiryController = TextEditingController();
+  TextEditingController batchIdController = TextEditingController();
   DateTime? selectSubmissionDate;
   DateTime? selectExpiryDate;
   Gudang? selectedGudang;
@@ -60,8 +61,8 @@ class _AddGudangState extends State<AddGudang> {
   Widget _buildLoadingState() {
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Tambah Data Gudang'),
-      ),
+          // title: Text('Tambah Data Gudang'),
+          ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -126,8 +127,8 @@ class _AddGudangState extends State<AddGudang> {
   Widget _buildFormUI(List<Gudang> gudangs) {
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Tambah Data Gudang'),
-      ),
+          // title: Text('Tambah Data Gudang'),
+          ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -228,6 +229,31 @@ class _AddGudangState extends State<AddGudang> {
                   hintText: 'Nama Obat dan BMHP',
                   hintStyle: const TextStyle(color: Colors.grey),
                 ),
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: batchIdController,
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(
+                    Icons.tag,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
+                  filled: true,
+                  hintText: 'Batch ID',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Batch ID';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 10),
               TextFormField(
@@ -351,38 +377,37 @@ class _AddGudangState extends State<AddGudang> {
   }
 
   void _saveData() {
-  if (selectedGudang == null) return;
+    if (selectedGudang == null) return;
 
-  String newDetailId = DateTime.now().millisecondsSinceEpoch.toString();
+    String newDetailId = DateTime.now().millisecondsSinceEpoch.toString();
 
-  ExpiryDetail newDetail = ExpiryDetail(
-    id: newDetailId,
-    expiryDate: expiryController.text,
-    quantity: int.tryParse(totalController.text) ?? 0,
-    submissionDate: submissionController.text,
-  );
+    ExpiryDetail newDetail = ExpiryDetail(
+      id: newDetailId,
+      expiryDate: expiryController.text,
+      quantity: int.tryParse(totalController.text) ?? 0,
+      submissionDate: submissionController.text,
+       batchId: batchIdController.text,
+    );
 
-  Map<String, ExpiryDetail> updatedExpiryDetails = {
-    ...selectedGudang!.expiryDetails,
-    newDetailId: newDetail,
-  };
+    Map<String, ExpiryDetail> updatedExpiryDetails = {
+      ...selectedGudang!.expiryDetails,
+      newDetailId: newDetail,
+    };
 
-  int updatedTotal = selectedGudang!.totalObat + newDetail.quantity;
+    int updatedTotal = selectedGudang!.totalObat + newDetail.quantity;
 
-  Gudang updatedGudang = Gudang(
-    id: selectedGudang!.id,
-    name: selectedGudang!.name,
-    tipe: selectedGudang!.tipe,
-    totalObat: updatedTotal,
-    expiryDetails: updatedExpiryDetails,
-  );
+    Gudang updatedGudang = Gudang(
+      id: selectedGudang!.id,
+      name: selectedGudang!.name,
+      tipe: selectedGudang!.tipe,
+      totalObat: updatedTotal,
+      expiryDetails: updatedExpiryDetails,
+    );
 
-  print('Updating Gudang with id: ${updatedGudang.id}');
+    print('Updating Gudang with id: ${updatedGudang.id}');
 
-  _dataController.updateGudang(selectedGudang!.id, updatedGudang);
+    _dataController.updateGudang(selectedGudang!.id, updatedGudang);
 
-  Navigator.of(context).pop();
-}
-
-
+    Navigator.of(context).pop();
+  }
 }

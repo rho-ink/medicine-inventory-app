@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:admin_app/models/trans_model.dart';
 import 'package:admin_app/controllers/data_controller.dart';
 
@@ -12,6 +13,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   late Future<Map<String, Transaksi>> _futureTransaksi;
   final DataController _dataController = DataController();
+  String _filterType = 'daily'; // Default filter type
 
   @override
   void initState() {
@@ -36,6 +38,35 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  List<Transaksi> _filterTransactions(List<Transaksi> transactions) {
+    final now = DateTime.now();
+    final dateFormat = DateFormat('dd/MM/yyyy'); // Date format
+
+    if (_filterType == 'daily') {
+      // Filter for today's transactions
+      return transactions.where((trans) {
+        try {
+          final transDate = dateFormat.parse(trans.date);
+          return transDate.year == now.year &&
+              transDate.month == now.month &&
+              transDate.day == now.day;
+        } catch (e) {
+          return false; // If parsing fails, exclude the transaction
+        }
+      }).toList();
+    } else if (_filterType == 'monthly') {
+      // Filter for this month's transactions
+      return transactions.where((trans) {
+        try {
+          final transDate = dateFormat.parse(trans.date);
+          return transDate.year == now.year && transDate.month == now.month;
+        } catch (e) {
+          return false; // If parsing fails, exclude the transaction
+        }
+      }).toList();
+    }
+    return transactions; // No filtering if filterType is not recognized
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +83,11 @@ class _MainScreenState extends State<MainScreen> {
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(child: Text('No data available'));
             } else {
-              final transactions = snapshot.data!.values.toList();
-
-              // Sort transactions by date in descending order
+              var transactions = snapshot.data!.values.toList();
               transactions.sort((a, b) => b.date.compareTo(a.date));
+
+              // Filter transactions based on selected filter type
+              transactions = _filterTransactions(transactions);
 
               return Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -65,11 +97,34 @@ class _MainScreenState extends State<MainScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Pemakaian Obat Harian',
+                          'Pemakaian Obat dan BMHP',
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      children: [
+                        ToggleButtons(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: Text('Harian'),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                  child: Text('Bulanan'),
+                                ),
+                              ],
+                              isSelected: [_filterType == 'daily', _filterType == 'monthly'],
+                              onPressed: (int index) {
+                                setState(() {
+                                  _filterType = index == 0 ? 'daily' : 'monthly';
+                                });
+                              },
+                            ),
                       ],
                     ),
                     SizedBox(height: 20),

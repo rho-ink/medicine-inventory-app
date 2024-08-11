@@ -7,7 +7,7 @@ import 'package:admin_app/views/pages/screens/dashboard_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:admin_app/views/components/my_drawer.dart'; // Import the Drawer file
+import 'package:admin_app/views/components/my_drawer.dart';
 import 'package:admin_app/views/components/my_excel.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,21 +18,35 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  PageController _pageController = PageController(initialPage: 0);
+  int index = 0;
+
   var widgetList = [
     DashboardPage(),
     MainScreen(),
     SecondScreen(),
   ];
 
-  int index = 0;
-
   // sign user out
   Future<void> signUserOut(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
-    // Navigate to the login page
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
+  void onPageChanged(int pageIndex) {
+    setState(() {
+      index = pageIndex;
+    });
+  }
+
+  void onBottomNavTapped(int tappedIndex) {
+    _pageController.animateToPage(
+      tappedIndex,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
     );
   }
 
@@ -40,9 +54,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Check if the user is null and handle it
     if (user == null) {
-      // Redirect to login page if user is not signed in
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
@@ -72,21 +84,19 @@ class _HomePageState extends State<HomePage> {
           if (index == 2)
             IconButton(
               icon: Icon(Icons.print_rounded),
-              onPressed: () async {await exportToExcel(); // Call your export function here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Exported to Excel!')),
-              );},
+              onPressed: () async {
+                await exportToExcel();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Exported to Excel!')),
+                );
+              },
             ),
         ],
       ),
-      drawer: AppDrawer(onLogout: () => signUserOut(context)), // Use the Drawer
+      drawer: AppDrawer(onLogout: () => signUserOut(context)),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
-        onTap: (value) {
-          setState(() {
-            index = value;
-          });
-        },
+        onTap: onBottomNavTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -103,13 +113,16 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: _buildFAB(),
-      body: widgetList[index],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: onPageChanged,
+        children: widgetList,
+      ),
     );
   }
 
   Widget _buildFAB() {
     if (index == 1) {
-      // FAB MainScreen
       return FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -123,7 +136,6 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
       );
     } else if (index == 2) {
-      // FAB SecondScreen
       return FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -139,16 +151,23 @@ class _HomePageState extends State<HomePage> {
     }
     return Container(); // Return an empty container if no FAB is needed
   }
+
   String _getAppBarTitle(int index) {
     switch (index) {
       case 0:
-        return 'Dashboard Gudang';
+        return 'Dashboard';
       case 1:
         return 'Daftar Keluaran Obat';
       case 2:
-        return 'Daftar Obat dan BMHP'; // Title for the new screen
+        return 'Daftar Obat dan BMHP';
       default:
         return 'Default Title';
     }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }

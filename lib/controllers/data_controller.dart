@@ -225,6 +225,7 @@ class DataController {
             expiryDate: expiry.expiryDate,
             quantity: expiry.quantity - remainingQuantity,
             submissionDate: expiry.submissionDate,
+            batchId: expiry.batchId,
           );
           remainingQuantity = 0;
         }
