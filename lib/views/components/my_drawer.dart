@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:admin_app/views/admin_page.dart'; // Import the AdminPage
+
 
 class AppDrawer extends StatelessWidget {
   final VoidCallback onLogout;
+  final String userEmail;
+  final String userRole;
 
-  AppDrawer({required this.onLogout});
+  AppDrawer({
+    required this.onLogout,
+    required this.userEmail,
+    required this.userRole,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -11,28 +19,42 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
-            // decoration: BoxDecoration(
-            //   color: Colors.blue,
-            // ),
-            child: Text(
-              'Menu',
-              style: TextStyle(
-                // color: Colors.white,
-                fontSize: 24,
+          Container(
+            height: 130,
+            child: DrawerHeader(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Email: $userEmail',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Role: $userRole',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          // ListTile(
-          //   title: Text('Home'),
-          //   onTap: () {
-          //     Navigator.pop(context); // Close the drawer
-          //     Navigator.pushReplacement(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => HomePage()),
-          //     );
-          //   },
-          // ),
+          ListTile(
+            leading: Icon(Icons.admin_panel_settings),
+            title: Text('Admin'),
+            onTap: () {
+              Navigator.pop(context); // Close the drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AdminPage()),
+              );
+            },
+          ),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Logout'),

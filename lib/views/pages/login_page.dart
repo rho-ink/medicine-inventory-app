@@ -1,10 +1,10 @@
 import 'package:admin_app/views/components/my_button.dart';
 import 'package:admin_app/views/components/my_textfield.dart';
-import 'package:admin_app/views/pages/home_page.dart'; // Import your home page here
+import 'package:admin_app/views/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_app/controllers/auth_controller.dart';
-import 'package:admin_app/views/pages/reset_password_page.dart'; // Import the reset password page here
+import 'package:admin_app/views/pages/reset_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -30,9 +30,10 @@ class _LoginPageState extends State<LoginPage> {
       isLoading = true;
     });
 
-    User? user = await _authController.signIn(
+    User? user = await _authController.signInWithEmailAndPassword(
       emailController.text,
       passwordController.text,
+      context,
     );
 
     setState(() {

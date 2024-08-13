@@ -14,27 +14,46 @@ class _DashboardPageState extends State<DashboardPage> {
   String _selectedObatName = '';
   DateTimeRange? _selectedDateRange;
   List<String> _obatNames = [];
+  Map<String, int>? _dashboardData;
 
-  Future<Map<String, int>> _fetchDashboardData() async {
-    // Fetch data based on _selectedMonth and _selectedObatName
-    int added = await _dataController.getMonthlyAddedGudangForMedicine(_selectedMonth);
-    int reduced = await _dataController
-        .getMonthlyTransactionForMedicine(_selectedObatName);
-    int deleted = await _dataController
-        .getMonthlyDeletedGudangForMedicine(_selectedObatName);
+  @override
+  void initState() {
+    super.initState();
+    _loadObatNames();
+    _fetchDashboardData(); // Fetch data initially
+  }
 
-    return {
-      'added': added,
-      'reduced': reduced,
-      'deleted': deleted,
-    };
+  Future<void> _fetchDashboardData() async {
+    int added = 0;
+    int reduced = 0;
+    int deleted = 0;
+
+    try {
+      added = await _dataController.getMonthlyAddedGudangForMedicine(_selectedMonth);
+      reduced = await _dataController.getMonthlyTransactionForMedicine(_selectedObatName);
+      deleted = await _dataController.getMonthlyDeletedGudangForMedicine(_selectedObatName);
+    } catch (e) {
+      // Handle error
+    }
+
+    if (mounted) {
+      setState(() {
+        _dashboardData = {
+          'added': added,
+          'reduced': reduced,
+          'deleted': deleted,
+        };
+      });
+    }
   }
 
   Future<void> _loadObatNames() async {
-    final obatData = await _dataController.getObatNames(); // Adjust method if needed
-    setState(() {
-      _obatNames = obatData;
-    });
+    final obatData = await _dataController.getObatNames();
+    if (mounted) {
+      setState(() {
+        _obatNames = obatData;
+      });
+    }
   }
 
   Future<void> _selectDateRange() async {
@@ -59,15 +78,9 @@ class _DashboardPageState extends State<DashboardPage> {
       setState(() {
         _selectedDateRange = pickedDateRange;
         _selectedMonth = DateFormat('yyyy-MM').format(pickedDateRange.start);
-        // Refresh data based on the new date range
+        _fetchDashboardData(); // Refresh data based on the new date range
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadObatNames();
   }
 
   @override
@@ -78,15 +91,16 @@ class _DashboardPageState extends State<DashboardPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Informasi Data Gudang',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          
-                        ],),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Informasi Data Gudang',
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -96,8 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 setState(() {
                   _selectedObatName = selected ?? '';
                 });
-                // Trigger refresh after selection
-                _fetchDashboardData();
+                _fetchDashboardData(); // Refresh data when an item is selected
               },
               dropdownDecoratorProps: DropDownDecoratorProps(
                 dropdownSearchDecoration: InputDecoration(
@@ -130,36 +143,23 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: FutureBuilder<Map<String, int>>(
-              future: _fetchDashboardData(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error fetching data'));
-                }
-
-                final data = snapshot.data;
-
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      DashboardCard(
-                          title: 'Penerimaan', quantity: data?['added'] ?? 0),
-                      DashboardCard(
-                          title: 'Distribusi',
-                          quantity: data?['reduced'] ?? 0),
-                      DashboardCard(
-                          title: 'Kadaluarsa',
-                          quantity: data?['deleted'] ?? 0),
-                    ],
+            child: _dashboardData == null
+                ? Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        DashboardCard(
+                            title: 'Penerimaan', quantity: _dashboardData?['added'] ?? 0),
+                        DashboardCard(
+                            title: 'Distribusi',
+                            quantity: _dashboardData?['reduced'] ?? 0),
+                        DashboardCard(
+                            title: 'Kadaluarsa',
+                            quantity: _dashboardData?['deleted'] ?? 0),
+                      ],
+                    ),
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -170,6 +170,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 }
+
 
 class DashboardCard extends StatelessWidget {
   final String title;

@@ -75,6 +75,26 @@ exports.logExpiryDetailDelete = functions.database.ref("/gudangData/{gudangId}/e
     });
 
 
+// roleassign
+exports.assignRoleOnSignup = functions.auth.user().onCreate(async (user) => {
+  const userRef = admin.database().ref(`/users/${user.uid}`);
+  await userRef.set({
+    email: user.email,
+    role: "user", // Default role assignment
+  });
+});
+
+
+// rolelogging
+exports.onRoleChange = functions.database.ref("/users/{uid}/role")
+    .onUpdate((change, context) => {
+      const beforeRole = change.before.val();
+      const afterRole = change.after.val();
+      console.log(`Role changed from ${beforeRole} to ${afterRole} for user ${context.params.uid}`);
+
+    // Implement any additional logic, such as sending notifications or validating changes
+    });
+
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 
