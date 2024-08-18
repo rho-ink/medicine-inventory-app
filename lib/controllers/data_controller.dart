@@ -530,26 +530,4 @@ class DataController {
       return 0;
     }
   }
-
-  ///ambil obat
-  Future<List<String>> getObatNames() async {
-    try {
-      final snapshot = await FirebaseDatabase.instance.ref('obatData').get();
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>?;
-        if (data != null) {
-          return data.values
-              .map(
-                  (value) => (value as Map<dynamic, dynamic>)['name'] as String)
-              .toSet() // Remove duplicates
-              .toList();
-        }
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching Obat names: $e');
-      return [];
-    }
-  }
-  /////
 }

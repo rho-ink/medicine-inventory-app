@@ -20,7 +20,7 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           Container(
-            height: 130,
+            height: 200,
             child: DrawerHeader(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

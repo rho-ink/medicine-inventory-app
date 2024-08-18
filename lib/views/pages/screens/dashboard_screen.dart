@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Import for DateFormat
+import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:admin_app/controllers/data_controller.dart';
+import 'package:admin_app/controllers/calculate_controller.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -9,7 +10,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final DataController _dataController = DataController();
+  final CalculateController _calculateController = CalculateController();
   String _selectedMonth = DateFormat('yyyy-MM').format(DateTime.now());
   String _selectedObatName = '';
   DateTimeRange? _selectedDateRange;
@@ -20,65 +21,63 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _loadObatNames();
-    _fetchDashboardData(); // Fetch data initially
+    _fetchDashboardData();
   }
 
   Future<void> _fetchDashboardData() async {
-    int added = 0;
-    int reduced = 0;
-    int deleted = 0;
+    int currentTotalObat = 0;
+    int previousMonthTotalObat = 0;
+    int totalDeleted = 0;
+    int totalPenerimaan = 0;
+    int totalTransaksi = 0;
+    int safetyStock = 0;
 
     try {
-      added = await _dataController.getMonthlyAddedGudangForMedicine(_selectedMonth);
-      reduced = await _dataController.getMonthlyTransactionForMedicine(_selectedObatName);
-      deleted = await _dataController.getMonthlyDeletedGudangForMedicine(_selectedObatName);
+      print('Fetching dashboard data...');
+      currentTotalObat = await _calculateController.getCurrentTotalObat(_selectedObatName, _selectedDateRange);
+      previousMonthTotalObat = await _calculateController.getPreviousMonthTotalObat(_selectedObatName);
+      totalDeleted = await _calculateController.getTotalDeletedGudang(_selectedObatName, _selectedDateRange);
+      totalPenerimaan = await _calculateController.getTotalPenerimaan(_selectedObatName, _selectedDateRange);
+      totalTransaksi = await _calculateController.getTotalTransaksi(_selectedObatName, _selectedDateRange);
+      safetyStock = await _calculateController.getSafetyStock(_selectedObatName, _selectedDateRange, 1);
+
+      print('Dashboard data fetched: $currentTotalObat, $previousMonthTotalObat, $totalDeleted, $totalPenerimaan, $totalTransaksi, $safetyStock');
     } catch (e) {
-      // Handle error
+      print('Error fetching dashboard data: $e');
     }
 
     if (mounted) {
       setState(() {
         _dashboardData = {
-          'added': added,
-          'reduced': reduced,
-          'deleted': deleted,
+          'currentTotalObat': currentTotalObat,
+          'previousMonthTotalObat': previousMonthTotalObat,
+          'totalDeleted': totalDeleted,
+          'totalPenerimaan': totalPenerimaan,
+          'totalTransaksi': totalTransaksi,
+          'safetyStock': safetyStock,
         };
       });
     }
   }
 
   Future<void> _loadObatNames() async {
-    final obatData = await _dataController.getObatNames();
-    if (mounted) {
-      setState(() {
-        _obatNames = obatData;
-      });
-    }
+    print('Loading obat names...');
+    final obatNames = await _calculateController.getObatNames();
+    print('Obat names loaded: $obatNames');
+    setState(() {
+      _obatNames = obatNames;
+    });
   }
 
-  Future<void> _selectDateRange() async {
-    DateTimeRange? pickedDateRange = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(DateTime.now().year - 1),
-      lastDate: DateTime(DateTime.now().year + 1),
-      initialDateRange: _selectedDateRange,
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: Colors.blue,
-            colorScheme: ColorScheme.light(primary: Colors.blue, secondary: Colors.blue),
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (pickedDateRange != null && pickedDateRange != _selectedDateRange) {
+  void _onMonthChanged(DateTime? date) {
+    if (date != null) {
       setState(() {
-        _selectedDateRange = pickedDateRange;
-        _selectedMonth = DateFormat('yyyy-MM').format(pickedDateRange.start);
-        _fetchDashboardData(); // Refresh data based on the new date range
+        _selectedMonth = DateFormat('yyyy-MM').format(date);
+        _selectedDateRange = DateTimeRange(
+          start: DateTime(date.year, date.month, 1),
+          end: DateTime(date.year, date.month + 1, 0),
+        );
+        _fetchDashboardData();
       });
     }
   }
@@ -86,126 +85,87 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Informasi Data Gudang',
-                  style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: DropdownSearch<String>(
+      // appBar: AppBar(
+      //   title: const Text('Dashboard'),
+      // ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            DropdownSearch<String>(
               items: _obatNames,
-              onChanged: (String? selected) {
+              selectedItem: _selectedObatName,
+              dropdownBuilder: (context, selectedItem) => Text(
+                selectedItem ?? "Choose Obat",
+                style: TextStyle(color: selectedItem == null ? Colors.grey : Colors.black),
+              ),
+              onChanged: (value) {
                 setState(() {
-                  _selectedObatName = selected ?? '';
+                  _selectedObatName = value ?? '';
+                  print('Selected obat: $_selectedObatName');
+                  _fetchDashboardData();
                 });
-                _fetchDashboardData(); // Refresh data when an item is selected
               },
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(
-                    Icons.search,
-                    size: 20,
-                    color: Colors.grey,
-                  ),
-                  filled: true,
-                  hintText: 'Pilih Obat dan BMHP',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                ),
-              ),
-              popupProps: PopupProps.menu(
-                showSearchBox: true,
-                searchFieldProps: TextFieldProps(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Cari Obat dan BMHP',
-                    hintStyle: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _dashboardData == null
-                ? Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        DashboardCard(
-                            title: 'Penerimaan', quantity: _dashboardData?['added'] ?? 0),
-                        DashboardCard(
-                            title: 'Distribusi',
-                            quantity: _dashboardData?['reduced'] ?? 0),
-                        DashboardCard(
-                            title: 'Kadaluarsa',
-                            quantity: _dashboardData?['deleted'] ?? 0),
-                      ],
+            const SizedBox(height: 10),
+            Text('Bulan: $_selectedMonth'),
+            ElevatedButton(
+              onPressed: () async {
+                DateTime? date = await showMonthPicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                );
+                _onMonthChanged(date);
+              },
+              child: const Text('Pilih Bulan'),
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  _dashboardData != null
+                      ? Card(
+                          child: ListTile(
+                            title: const Text('Total Persediaan'),
+                            subtitle: Text('${_dashboardData!['currentTotalObat']}'),
+                          ),
+                        )
+                      : const Center(child: CircularProgressIndicator()),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Stok Awal'),
+                      subtitle: Text('${_dashboardData?['previousMonthTotalObat'] ?? 0}'),
                     ),
                   ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _selectDateRange,
-        child: Icon(Icons.calendar_today),
-      ),
-    );
-  }
-}
-
-
-class DashboardCard extends StatelessWidget {
-  final String title;
-  final int quantity;
-
-  DashboardCard({required this.title, required this.quantity});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(4.0),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Total Kadaluarsa'),
+                      subtitle: Text('${_dashboardData?['totalDeleted'] ?? 0}'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Total Penerimaan'),
+                      subtitle: Text('${_dashboardData?['totalPenerimaan'] ?? 0}'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Total Pengeluaran'),
+                      subtitle: Text('${_dashboardData?['totalTransaksi'] ?? 0}'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Safety Stock'),
+                      subtitle: Text('${_dashboardData?['safetyStock'] ?? 0}'),
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 25),
-              Text(
-                '$quantity',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
