@@ -11,6 +11,7 @@ import 'package:admin_app/views/components/my_drawer.dart';
 import 'package:admin_app/views/components/my_excel.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_app/controllers/user_provider.dart'; // Import UserProvider
+import 'package:admin_app/views/pages/edits/add_obat.dart'; // Import the AddObatPage
 
 // Import UserProvider
 
@@ -45,7 +46,8 @@ class _HomePageState extends State<HomePage> {
       final DatabaseReference ref = FirebaseDatabase.instance.ref();
       final roleSnapshot = await ref.child('users/${user.uid}/role').get();
       final email = user.email ?? 'Unknown Email';
-      final role = roleSnapshot.exists ? roleSnapshot.value as String : 'Unknown Role';
+      final role =
+          roleSnapshot.exists ? roleSnapshot.value as String : 'Unknown Role';
 
       setState(() {
         userRole = role;
@@ -165,7 +167,7 @@ class _HomePageState extends State<HomePage> {
     // Show both FABs for admin
     if (userRole == 'admin') {
       if (index == 1) {
-        return FloatingActionButton(
+        return FloatingActionButton.extended(
           onPressed: () {
             Navigator.push(
               context,
@@ -174,44 +176,95 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-          child: Icon(CupertinoIcons.add),
+          icon: Icon(CupertinoIcons.add),
+          label: Text('Transaksi'),
           backgroundColor: Colors.white,
         );
       } else if (index == 2) {
-        return FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) => const AddGudang(),
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => AddObatPage(),
+                    ),
+                  );
+                },
+                child: Icon(Icons.medical_services),
+                backgroundColor: Colors.white,
+                heroTag: 'addObat',
+                mini: true, // Smaller FAB
+                tooltip: 'Add Obat',
               ),
-            );
-          },
-          child: Icon(CupertinoIcons.add),
-          backgroundColor: Colors.white,
+            ),
+            SizedBox(height: 10), // Space between the FABs
+            Align(
+              alignment: Alignment.bottomRight,
+              child: FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => const AddGudang(),
+                    ),
+                  );
+                },
+                icon: Icon(CupertinoIcons.add),
+                label: Text('Penerimaan'),
+                backgroundColor: Colors.white,
+              ),
+            )
+          ],
         );
       }
     }
 
     // Show "Add Gudang" FAB for apoteker
     if (userRole == 'apoteker' && index == 2) {
-      return FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) => const AddGudang(),
-            ),
-          );
-        },
-        child: Icon(CupertinoIcons.add),
-        backgroundColor: Colors.white,
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => AddObatPage(),
+                ),
+              );
+            },
+            child: Icon(Icons.medical_services),
+            backgroundColor: Colors.white,
+            heroTag: 'addObat',
+            mini: true, // Smaller FAB
+            tooltip: 'Add Obat',
+          ),
+          SizedBox(height: 10), // Space between the FABs
+          FloatingActionButton.extended(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => const AddGudang(),
+                ),
+              );
+            },
+            icon: Icon(CupertinoIcons.add),
+            label: Text('Penerimaan'),
+            backgroundColor: Colors.white,
+          )
+        ],
       );
     }
 
     // Show "Add Transaksi" FAB for assistant
     if (userRole == 'assistant' && index == 1) {
-      return FloatingActionButton(
+      return FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -220,7 +273,8 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
-        child: Icon(CupertinoIcons.add),
+        icon: Icon(CupertinoIcons.add),
+        label: Text('Transaksi'),
         backgroundColor: Colors.white,
       );
     }
