@@ -56,49 +56,50 @@ class _AddObatPageState extends State<AddObatPage> {
         ],
       ),
       body: StreamBuilder<List<Gudang>>(
-  stream: _dataController.gudangStream,
-  builder: (context, AsyncSnapshot<List<Gudang>> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return Center(child: CircularProgressIndicator());
-    }
+        stream: _dataController.gudangStream,
+        builder: (context, AsyncSnapshot<List<Gudang>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      return Center(child: Text('No Obat available'));
-    }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No Obat available'));
+          }
 
-    // Remove the filtering by 'tipe' to show all Gudang items
-    final obatList = snapshot.data!;
+          // Remove the filtering by 'tipe' to show all Gudang items
+          final obatList = snapshot.data!;
 
-    return ListView.builder(
-      itemCount: obatList.length,
-      itemBuilder: (context, index) {
-        final obat = obatList[index];
+          return ListView.builder(
+            itemCount: obatList.length,
+            itemBuilder: (context, index) {
+              final obat = obatList[index];
 
-        return ListTile(
-          title: Text(obat.name),
-          subtitle: Text('Total: ${obat.totalObat}'),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () => _showObatDialog(obat),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => _deleteObat(obat.id),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  },
-),
-
-      floatingActionButton: FloatingActionButton(
+              return ListTile(
+                title: Text(obat.name),
+                subtitle: Text('Total: ${obat.totalObat}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () => _showObatDialog(obat),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => _deleteObat(obat.id),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showObatDialog(),
-        child: Icon(Icons.add),
+        icon: Icon(Icons.add),
+        label: Text('Tambah Obat & BMHP'),
+        backgroundColor: Colors.white,
       ),
     );
   }

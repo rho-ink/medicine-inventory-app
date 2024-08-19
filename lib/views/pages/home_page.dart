@@ -12,6 +12,7 @@ import 'package:admin_app/views/components/my_excel.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_app/controllers/user_provider.dart'; // Import UserProvider
 import 'package:admin_app/views/pages/edits/add_obat.dart'; // Import the AddObatPage
+import 'package:admin_app/views/components/my_notif.dart';
 
 // Import UserProvider
 
@@ -142,10 +143,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> _buildAppBarActions() {
     if (index == 0 && userRole == 'admin') {
       return [
-        IconButton(
-          icon: Icon(Icons.notifications_rounded),
-          onPressed: () {},
-        ),
+        NotificationButton(), // Replace with your NotificationButton widge
       ];
     } else if (index == 2 && userRole == 'admin') {
       return [

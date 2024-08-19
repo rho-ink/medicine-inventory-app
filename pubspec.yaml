@@ -48,6 +48,7 @@ dependencies:
   excel: ^4.0.2
   provider: ^6.1.2
   month_picker_dialog: ^5.0.0
+  badges: ^3.1.2
 
 dev_dependencies:
   flutter_test:

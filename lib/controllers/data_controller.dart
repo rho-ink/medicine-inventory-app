@@ -534,19 +534,19 @@ class DataController {
   //
   //addObat
   // Stream to get all Gudang items
- Stream<List<Gudang>> get gudangStream {
-  return _gudangRef.onValue.map((event) {
-    final data = event.snapshot.value as Map<dynamic, dynamic>?;
-    print('Data received from stream: $data'); // Debugging output
-    if (data == null) return [];
-    return data.entries.map((e) {
-      final gudang = Gudang.fromJson(Map<String, dynamic>.from(e.value), e.key);
-      print('Parsed Gudang item: $gudang'); // Debugging output
-      return gudang;
-    }).toList();
-  });
-}
-
+  Stream<List<Gudang>> get gudangStream {
+    return _gudangRef.onValue.map((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+      print('Data received from stream: $data'); // Debugging output
+      if (data == null) return [];
+      return data.entries.map((e) {
+        final gudang =
+            Gudang.fromJson(Map<String, dynamic>.from(e.value), e.key);
+        print('Parsed Gudang item: $gudang'); // Debugging output
+        return gudang;
+      }).toList();
+    });
+  }
 
   // Add new Obat
   Future<void> addObat(Gudang obat) async {
@@ -562,5 +562,4 @@ class DataController {
   Future<void> deleteObat(String id) async {
     await _gudangRef.child(id).remove();
   }
-  
 }
