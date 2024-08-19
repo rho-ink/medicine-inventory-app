@@ -109,18 +109,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 10),
             Text('Bulan: $_selectedMonth'),
-            ElevatedButton(
-              onPressed: () async {
-                DateTime? date = await showMonthPicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2030),
-                );
-                _onMonthChanged(date);
-              },
-              child: const Text('Pilih Bulan'),
-            ),
             Expanded(
               child: ListView(
                 children: [
@@ -167,6 +155,20 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          DateTime? date = await showMonthPicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime(2030),
+          );
+          _onMonthChanged(date);
+        },
+        icon: Icon(Icons.calendar_today),
+        label: Text('Pilih Bulan'),
+        backgroundColor: Colors.white,
       ),
     );
   }
