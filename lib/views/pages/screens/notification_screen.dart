@@ -55,7 +55,7 @@ class NotificationScreen extends StatelessWidget {
           print('Unsafe items: $unsafeItems');  // Debugging output
 
           if (unsafeItems.isEmpty) {
-            return Center(child: Text('All items are safe.'));
+            return Center(child: Text('Status Kadaluarsa Aman.'));
           }
 
           return ListView.builder(

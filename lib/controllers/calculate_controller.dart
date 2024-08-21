@@ -79,91 +79,100 @@ class CalculateController {
   }
 
   Future<int> getTotalDeletedGudang(String obatName, DateTimeRange? dateRange) async {
-    try {
-      int total = 0;
-      final snapshot = await _dbRef.child('gudangLog').get();
+  try {
+    int total = 0;
+    final snapshot = await _dbRef.child('gudangLog').get();
 
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>?;
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>?;
 
-        if (data != null) {
-          for (var entry in data.values) {
-            final record = entry as Map<dynamic, dynamic>;
-            final name = record['name'] as String?;
-            final dateStr = record['date'] as String?;
-            final date = dateStr != null ? _parseDate(dateStr) : null;
+      if (data != null) {
+        for (var entry in data.values) {
+          final record = entry as Map<dynamic, dynamic>;
+          final name = record['name'] as String?;
+          final dateStr = record['date'] as String?;
+          final date = dateStr != null ? _parseDate(dateStr) : null;
 
-            if (name == obatName && (dateRange == null || (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
-              total += (record['deletedQuantity'] as int? ?? 0);
-            }
+          if (name == obatName && 
+              (dateRange == null || 
+              (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
+            total += (record['deletedQuantity'] as int? ?? 0);
           }
         }
       }
-      print('Total Deleted Gudang: $total');
-      return total;
-    } catch (e) {
-      print('Error fetching total deleted gudang: $e');
-      return 0;
     }
+    print('Total Deleted Gudang: $total');
+    return total;
+  } catch (e) {
+    print('Error fetching total deleted gudang: $e');
+    return 0;
   }
+}
+
 
   Future<int> getTotalPenerimaan(String obatName, DateTimeRange? dateRange) async {
-    try {
-      int total = 0;
-      final snapshot = await _dbRef.child('gudangLog').get();
+  try {
+    int total = 0;
+    final snapshot = await _dbRef.child('gudangLog').get();
 
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>?;
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>?;
 
-        if (data != null) {
-          for (var entry in data.values) {
-            final record = entry as Map<dynamic, dynamic>;
-            final name = record['name'] as String?;
-            final dateStr = record['date'] as String?;
-            final date = dateStr != null ? _parseDate(dateStr) : null;
+      if (data != null) {
+        for (var entry in data.values) {
+          final record = entry as Map<dynamic, dynamic>;
+          final name = record['name'] as String?;
+          final dateStr = record['date'] as String?;
+          final date = dateStr != null ? _parseDate(dateStr) : null;
 
-            if (name == obatName && (dateRange == null || (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
-              total += (record['receivedQuantity'] as int? ?? 0);
-            }
+          if (name == obatName && 
+              (dateRange == null || 
+              (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
+            total += (record['receivedQuantity'] as int? ?? 0);
           }
         }
       }
-      print('Total Penerimaan: $total');
-      return total;
-    } catch (e) {
-      print('Error fetching total penerimaan: $e');
-      return 0;
     }
+    print('Total Penerimaan: $total');
+    return total;
+  } catch (e) {
+    print('Error fetching total penerimaan: $e');
+    return 0;
   }
+}
+
 
   Future<int> getTotalTransaksi(String obatName, DateTimeRange? dateRange) async {
-    try {
-      int total = 0;
-      final snapshot = await _dbRef.child('transaksi').get();
+  try {
+    int total = 0;
+    final snapshot = await _dbRef.child('transaksi').get();
 
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>?;
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>?;
 
-        if (data != null) {
-          for (var entry in data.values) {
-            final record = entry as Map<dynamic, dynamic>;
-            final name = record['name'] as String?;
-            final dateStr = record['date'] as String?;
-            final date = dateStr != null ? _parseDate(dateStr) : null;
+      if (data != null) {
+        for (var entry in data.values) {
+          final record = entry as Map<dynamic, dynamic>;
+          final name = record['name'] as String?;
+          final dateStr = record['date'] as String?;
+          final date = dateStr != null ? _parseDate(dateStr) : null;
 
-            if (name == obatName && (dateRange == null || (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
-              total += (record['totalTrans'] as int? ?? 0);
-            }
+          if (name == obatName && 
+              (dateRange == null || 
+              (date != null && date.isAfter(dateRange.start) && date.isBefore(dateRange.end)))) {
+            total += (record['totalTrans'] as int? ?? 0);
           }
         }
       }
-      print('Total Transaksi: $total');
-      return total;
-    } catch (e) {
-      print('Error fetching total transaksi: $e');
-      return 0;
     }
+    print('Total Transaksi: $total');
+    return total;
+  } catch (e) {
+    print('Error fetching total transaksi: $e');
+    return 0;
   }
+}
+
 
   Future<int> getSafetyStock(String obatName, DateTimeRange? dateRange, int threshold) async {
     try {

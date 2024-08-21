@@ -59,8 +59,8 @@ class _AddTransaksiState extends State<AddTransaksi> {
   Widget _buildLoadingState() {
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Tambah Data Transaksi'),
-      ),
+          // title: Text('Tambah Data Transaksi'),
+          ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -282,8 +282,7 @@ class _AddTransaksiState extends State<AddTransaksi> {
                         _saveData();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Mohon Pilih Obat dan BMHP')),
+                          SnackBar(content: Text('Mohon Pilih Obat dan BMHP')),
                         );
                       }
                     }
@@ -312,12 +311,18 @@ class _AddTransaksiState extends State<AddTransaksi> {
   }
 
   void _saveData() {
-    if (selectedGudang == null) return;
+    if (selectedGudang == null) {
+      print('No Gudang selected');
+      return;
+    }
 
     int quantityToDeduct = int.tryParse(totalController.text) ?? 0;
 
+    print('Quantity to Deduct: $quantityToDeduct');
+
     // Validate quantity to be deducted
     if (quantityToDeduct <= 0) {
+      print('Quantity must be greater than 0');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Quantity must be greater than 0')),
       );
@@ -325,76 +330,101 @@ class _AddTransaksiState extends State<AddTransaksi> {
     }
 
     if (quantityToDeduct > selectedGudang!.totalObat) {
+      print(
+          'Stock Gudang does not match. Available: ${selectedGudang!.totalObat}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Stok Gudang Tidak Sesuai')),
       );
       return;
     }
 
+    print('Proceeding with stock update and transaction');
     // Proceed with updating Gudang stock and adding transaction
     _updateGudangStock(quantityToDeduct);
   }
 
   void _updateGudangStock(int quantityToDeduct) {
-  // Retrieve and sort expiry details by date
-  List<MapEntry<String, ExpiryDetail>> sortedExpiryDetails =
-      selectedGudang!.expiryDetails.entries.toList()
-        ..sort((a, b) => a.value.expiryDate.compareTo(b.value.expiryDate));
+    // Retrieve and sort expiry details by date (FEFO)
+    List<MapEntry<String, ExpiryDetail>> sortedExpiryDetails =
+        selectedGudang!.expiryDetails.entries.toList()
+          ..sort((a, b) => a.value.expiryDate.compareTo(b.value.expiryDate));
 
-  int remainingQuantity = quantityToDeduct;
-  Map<String, ExpiryDetail> updatedExpiryDetails = {};
-
-  for (var entry in sortedExpiryDetails) {
-    String key = entry.key;
-    ExpiryDetail detail = entry.value;
-
-    if (remainingQuantity <= 0) break;
-
-    if (detail.quantity > remainingQuantity) {
-      // Deduct from this detail and update
-      updatedExpiryDetails[key] = ExpiryDetail(
-        id: key, // Use the key as the id
-        expiryDate: detail.expiryDate,
-        quantity: detail.quantity - remainingQuantity,
-        submissionDate: detail.submissionDate,
-        batchId: detail.batchId,
-      );
-      remainingQuantity = 0;
-    } else {
-      // Remove this detail and continue
-      remainingQuantity -= detail.quantity;
+    print('Sorted Expiry Details:');
+    for (var entry in sortedExpiryDetails) {
+      print(
+          'Batch ID: ${entry.value.batchId}, Expiry Date: ${entry.value.expiryDate}, Quantity: ${entry.value.quantity}');
     }
+
+    int remainingQuantity = quantityToDeduct;
+    Map<String, ExpiryDetail> updatedExpiryDetails = {};
+
+    // Process batches according to FEFO
+    for (var entry in sortedExpiryDetails) {
+      String key = entry.key;
+      ExpiryDetail detail = entry.value;
+
+      print(
+          'Processing Batch ID: $key, Quantity: ${detail.quantity}, Remaining Quantity: $remainingQuantity');
+
+      if (remainingQuantity <= 0) {
+        // No more quantity to deduct, retain remaining batches
+        updatedExpiryDetails[key] = detail;
+        print('Retained Batch ID: $key');
+        continue;
+      }
+
+      if (detail.quantity > remainingQuantity) {
+        // Deduct part of the batch and update its quantity
+        updatedExpiryDetails[key] = ExpiryDetail(
+          id: key,
+          expiryDate: detail.expiryDate,
+          quantity: detail.quantity - remainingQuantity,
+          submissionDate: detail.submissionDate,
+          batchId: detail.batchId,
+        );
+        print(
+            'Updated Batch ID: $key, New Quantity: ${detail.quantity - remainingQuantity}');
+        remainingQuantity = 0;
+      } else {
+        // Fully deduct the batch, remove it from stock
+        print(
+            'Exhausted Batch ID: $key, Deducted Quantity: ${detail.quantity}');
+        remainingQuantity -= detail.quantity;
+      }
+    }
+
+    // Only retain non-exhausted batches
+    updatedExpiryDetails.removeWhere((key, detail) => detail.quantity <= 0);
+
+    int updatedTotal = selectedGudang!.totalObat - quantityToDeduct;
+
+    print('Updated Total Obat: $updatedTotal');
+
+    Gudang updatedGudang = Gudang(
+      id: selectedGudang!.id,
+      name: selectedGudang!.name,
+      tipe: selectedGudang!.tipe,
+      totalObat: updatedTotal,
+      expiryDetails: updatedExpiryDetails,
+    );
+
+    print('Updating Gudang with id: ${updatedGudang.id}');
+    _dataController.updateGudang(selectedGudang!.id, updatedGudang);
+
+    // Create and add the new transaction
+    Transaksi newTransaction = Transaksi(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      date: submissionController.text,
+      gudangId: selectedGudang!.id,
+      name: selectedGudang!.name,
+      tipe: selectedGudang!.tipe,
+      totalTrans: -quantityToDeduct,
+    );
+
+    print(
+        'Creating Transaction: ID: ${newTransaction.id}, Total Trans: ${newTransaction.totalTrans}');
+    _dataController.addTransaksi(newTransaction.id, newTransaction);
+
+    Navigator.of(context).pop();
   }
-
-  int updatedTotal = selectedGudang!.totalObat - quantityToDeduct;
-
-  Gudang updatedGudang = Gudang(
-    id: selectedGudang!.id,
-    name: selectedGudang!.name,
-    tipe: selectedGudang!.tipe,
-    totalObat: updatedTotal,
-    expiryDetails: updatedExpiryDetails,
-  );
-
-  print('Updating Gudang with id: ${updatedGudang.id}');
-
-  _dataController.updateGudang(selectedGudang!.id, updatedGudang);
-
-  // Create and add the new transaction
-  Transaksi newTransaction = Transaksi(
-    id: DateTime.now()
-        .millisecondsSinceEpoch
-        .toString(), // Generate unique ID
-    date: submissionController.text,
-    gudangId: selectedGudang!.id,
-    name: selectedGudang!.name,
-    tipe: selectedGudang!.tipe,
-    totalTrans: -quantityToDeduct,
-  );
-
-  _dataController.addTransaksi(newTransaction.id, newTransaction);
-
-  Navigator.of(context).pop();
-}
-
 }
