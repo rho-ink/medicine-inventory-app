@@ -1,6 +1,6 @@
-# admin_app
+# Healthcare Centre Inventory App
 
-A new Flutter project.
+Made with FLutter & Firebase.
 
 ## Getting Started
 
